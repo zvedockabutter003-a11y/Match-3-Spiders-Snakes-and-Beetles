@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Три в ряд: Пауки, Змеи и Жуки</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            color: #ffcc00;
+        }
+        
+        .subtitle {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-gap: 5px;
+            margin: 20px auto;
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+        }
+        
+        .cell {
+            width: 45px;
+            height: 45px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .spider {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+        }
+        
+        .snake {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+        
+        .beetle {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            color: #333;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .selected {
+            box-shadow: 0 0 0 3px white;
+        }
+        
+        .match {
+            animation: pulse 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 600px) {
+            .game-board {
+                width: 320px;
+                height: 320px;
+            }
+            
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Три в ряд</h1>
+        <p class="subtitle">Пауки, Змеи и Жуки</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">Очки</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="moves">30</div>
+                <div class="stat-label">Ходы</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="time">60</div>
+                <div class="stat-label">Время</div>
+            </div>
+        </div>
+        
+        <div class="game-board" id="board"></div>
+        
+        <div class="controls">
+            <button id="restart">Новая игра</button>
+            <button id="hint">Подсказка</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>Как играть:</h3>
+            <ul>
+                <li>Нажимайте на фигурки, чтобы поменять их местами и собрать линии из трёх или более одинаковых существ</li>
+                <li>Пауки (🕷️), Змеи (🐍) и Жуки (🐞) исчезают при совпадении</li>
+                <li>Соберите как можно больше очков за ограниченное время и количество ходов</li>
+                <li>Используйте подсказку, если не видите возможных ходов</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const scoreElement = document.getElementById('score');
+            const movesElement = document.getElementById('moves');
+            const timeElement = document.getElementById('time');
+            const restartButton = document.getElementById('restart');
+            const hintButton = document.getElementById('hint');
+            
+            const BOARD_SIZE = 8;
+            const TYPES = ['spider', 'snake', 'beetle'];
+            const SYMBOLS = {
+                'spider': '🕷️',
+                'snake': '🐍',
+                'beetle': '🐞'
+            };
+            
+            let score = 0;
+            let moves = 30;
+            let time = 60;
+            let selectedCell = null;
+            let boardState = [];
+            let timer;
+            
+            // Инициализация игры
+            function initGame() {
+                clearInterval(timer);
+                score = 0;
+                moves = 30;
+                time = 60;
+                selectedCell = null;
+                
+                scoreElement.textContent = score;
+                movesElement.textContent = moves;
+                timeElement.textContent = time;
+                
+                createBoard();
+                startTimer();
+            }
+            
+            // Создание игрового поля
+            function createBoard() {
+                board.innerHTML = '';
+                boardState = [];
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    boardState[row] = [];
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        // Случайный тип фигурки, избегая совпадений при создании
+                        let type;
+                        do {
+                            type = TYPES[Math.floor(Math.random() * TYPES.length)];
+                        } while (
+                            (row >= 2 && boardState[row-1][col] === type && boardState[row-2][col] === type) ||
+                            (col >= 2 && boardState[row][col-1] === type && boardState[row][col-2] === type)
+                        );
+                        
+                        boardState[row][col] = type;
+                        cell.classList.add(type);
+                        cell.textContent = SYMBOLS[type];
+                        
+                        cell.addEventListener('click', () => handleCellClick(row, col, cell));
+                        
+                        board.appendChild(cell);
+                    }
+                }
+                
+                // Проверка на возможные ходы
+                if (!hasValidMoves()) {
+                    reshuffleBoard();
+                }
+            }
+            
+            // Обработка клика по ячейке
+            function handleCellClick(row, col, cell) {
+                if (moves <= 0 || time <= 0) return;
+                
+                if (!selectedCell) {
+                    // Выбор первой ячейки
+                    selectedCell = { row, col, element: cell };
+                    cell.classList.add('selected');
+                } else {
+                    // Выбор второй ячейки
+                    const firstCell = selectedCell;
+                    
+                    // Проверка, являются ли ячейки соседями
+                    if (areNeighbors(firstCell.row, firstCell.col, row, col)) {
+                        // Меняем местами
+                        swapCells(firstCell.row, firstCell.col, row, col);
+                        
+                        // Проверяем на совпадения
+                        const matches = findMatches();
+                        
+                        if (matches.length > 0) {
+                            // Есть совпадения
+                            moves--;
+                            movesElement.textContent = moves;
+                            removeMatches(matches);
+                            updateScore(matches.length);
+                        } else {
+                            // Нет совпадений, возвращаем обратно
+                            swapCells(firstCell.row, firstCell.col, row, col);
+                        }
+                    }
+                    
+                    // Снимаем выделение
+                    firstCell.element.classList.remove('selected');
+                    selectedCell = null;
+                }
+            }
+            
+            // Проверка, являются ли ячейки соседями
+            function areNeighbors(row1, col1, row2, col2) {
+                return (
+                    (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                    (Math.abs(col1 - col2) === 1 && row1 === row2)
+                );
+            }
+            
+            // Обмен ячеек местами
+            function swapCells(row1, col1, row2, col2) {
+                // Меняем местами в состоянии доски
+                const temp = boardState[row1][col1];
+                boardState[row1][col1] = boardState[row2][col2];
+                boardState[row2][col2] = temp;
+                
+                // Обновляем отображение
+                updateBoard();
+            }
+            
+            // Обновление отображения доски
+            function updateBoard() {
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = board.children[row * BOARD_SIZE + col];
+                        cell.className = 'cell ' + boardState[row][col];
+                        cell.textContent = SYMBOLS[boardState[row][col]];
+                    }
+                }
+            }
+            
+            // Поиск совпадений
+            function findMatches() {
+                const matches = [];
+                
+                // Проверка по горизонтали
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                        const type = boardState[row][col];
+                        if (type && 
+                            type === boardState[row][col+1] && 
+                            type === boardState[row][col+2]) {
+                            
+                            // Проверяем, есть ли уже эти ячейки в списке совпадений
+                            for (let i = 0; i < 3; i++) {
+                                if (!matches.some(m => m.row === row && m.col === col+i)) {
+                                    matches.push({ row, col: col+i });
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Проверка по вертикали
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                        const type = boardState[row][col];
+                        if (type && 
+                            type === boardState[row+1][col] && 
+                            type === boardState[row+2][col]) {
+                            
+                            // Проверяем, есть ли уже эти ячейки в списке совпадений
+                            for (let i = 0; i < 3; i++) {
+                                if (!matches.some(m => m.row === row+i && m.col === col)) {
+                                    matches.push({ row: row+i, col });
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return matches;
+            }
+            
+            // Удаление совпадений
+            function removeMatches(matches) {
+                // Помечаем совпадающие ячейки
+                matches.forEach(match => {
+                    const cell = board.children[match.row * BOARD_SIZE + match.col];
+                    cell.classList.add('match');
+                });
+                
+                // Удаляем совпадения после анимации
+                setTimeout(() => {
+                    matches.forEach(match => {
+                        boardState[match.row][match.col] = null;
+                    });
+                    
+                    // Сдвигаем фигурки вниз
+                    dropCells();
+                    
+                    // Заполняем пустые места
+                    fillEmptyCells();
+                    
+                    // Проверяем новые совпадения
+                    const newMatches = findMatches();
+                    if (newMatches.length > 0) {
+                        removeMatches(newMatches);
+                        updateScore(newMatches.length);
+                    }
+                }, 500);
+            }
+            
+            // Сдвиг фигурок вниз
+            function dropCells() {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    let emptySpaces = 0;
+                    
+                    // Проходим снизу вверх
+                    for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                        if (boardState[row][col] === null) {
+                            emptySpaces++;
+                        } else if (emptySpaces > 0) {
+                            // Перемещаем фигурку вниз
+                            boardState[row + emptySpaces][col] = boardState[row][col];
+                            boardState[row][col] = null;
+                        }
+                    }
+                }
+                
+                updateBoard();
+            }
+            
+            // Заполнение пустых ячеек
+            function fillEmptyCells() {
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        if (boardState[row][col] === null) {
+                            boardState[row][col] = TYPES[Math.floor(Math.random() * TYPES.length)];
+                        }
+                    }
+                }
+                
+                updateBoard();
+            }
+            
+            // Обновление счета
+            function updateScore(matchesCount) {
+                score += matchesCount * 10;
+                scoreElement.textContent = score;
+            }
+            
+            // Проверка наличия возможных ходов
+            function hasValidMoves() {
+                // Временная функция для упрощения
+                // В реальной игре здесь была бы сложная логика проверки
+                return true;
+            }
+            
+            // Перемешивание доски
+            function reshuffleBoard() {
+                // Создаем новую случайную доску
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        boardState[row][col] = TYPES[Math.floor(Math.random() * TYPES.length)];
+                    }
+                }
+                
+                updateBoard();
+                
+                // Проверяем снова
+                if (!hasValidMoves()) {
+                    reshuffleBoard();
+                }
+            }
+            
+            // Запуск таймера
+            function startTimer() {
+                timer = setInterval(() => {
+                    time--;
+                    timeElement.textContent = time;
+                    
+                    if (time <= 0) {
+                        clearInterval(timer);
+                        endGame();
+                    }
+                }, 1000);
+            }
+            
+            // Окончание игры
+            function endGame() {
+                alert(`Игра окончена! Ваш счет: ${score}`);
+            }
+            
+            // Подсказка
+            function showHint() {
+                if (moves <= 0 || time <= 0) return;
+                
+                // В реальной игре здесь была бы логика поиска возможного хода
+                // Для демонстрации просто выделим случайную ячейку
+                const randomRow = Math.floor(Math.random() * BOARD_SIZE);
+                const randomCol = Math.floor(Math.random() * BOARD_SIZE);
+                const cell = board.children[randomRow * BOARD_SIZE + randomCol];
+                
+                cell.classList.add('selected');
+                setTimeout(() => {
+                    cell.classList.remove('selected');
+                }, 1000);
+            }
+            
+            // Обработчики событий
+            restartButton.addEventListener('click', initGame);
+            hintButton.addEventListener('click', showHint);
+            
+            // Запуск игры
+            initGame();
+        });
+    </script>
+</body>
+</html>
